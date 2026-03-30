@@ -6,7 +6,7 @@ Each puzzle includes a FEN position and the best move(s).
 PUZZLES = [
     {
         "id": 1,
-        "name": "Scholar's Mate Escape",
+        "name": "Control the Center",
         "difficulty": "Easy",
         "fen": "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1",
         "best_moves": ["d2d4"],
@@ -14,11 +14,11 @@ PUZZLES = [
     },
     {
         "id": 2,
-        "name": "Back Rank Mate Threat",
+        "name": "Back Rank Weakness",
         "difficulty": "Medium",
         "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1",
-        "best_moves": ["f1c1", "g1f1"],
-        "description": "White's king is exposed on the back rank. Find a safe move."
+        "best_moves": ["e1g1"],
+        "description": "White can improve king safety immediately. Find the legal move that gets the king out of the center."
     },
     {
         "id": 3,
@@ -38,7 +38,7 @@ PUZZLES = [
     },
     {
         "id": 5,
-        "name": "Discovered Attack",
+        "name": "Discovered Attack: Attack on Titan",
         "difficulty": "Medium",
         "fen": "r1bqkbnr/pppppppp/2n5/8/8/3P1N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1",
         "best_moves": ["c6d4"],
@@ -46,7 +46,7 @@ PUZZLES = [
     },
     {
         "id": 6,
-        "name": "Pin the Bishop",
+        "name": "Pin them Down",
         "difficulty": "Medium",
         "fen": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
         "best_moves": ["f3e5"],
@@ -54,7 +54,7 @@ PUZZLES = [
     },
     {
         "id": 7,
-        "name": "Escape the Trap",
+        "name": "Escape the Pin",
         "difficulty": "Hard",
         "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/2N5/PPPP1PPP/R1BQK1NR w KQkq - 0 1",
         "best_moves": ["c4d5"],
@@ -62,11 +62,11 @@ PUZZLES = [
     },
     {
         "id": 8,
-        "name": "Fork Attack",
+        "name": "Knight Fork",
         "difficulty": "Easy",
-        "fen": "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 0 1",
+        "fen": "rnb2bnr/ppp1kppp/3p1q2/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 0 1",
         "best_moves": ["c3d5"],
-        "description": "White's knight can fork multiple pieces. Find the winning move!"
+        "description": "Black has just misplaced the king and queen. White to move can play a knight fork and attack both at once."
     },
 ]
 
