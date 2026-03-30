@@ -30,7 +30,13 @@ A command-line chess tutor application that helps players solve chess puzzles an
    ```
 
 3. **Download & Setup Stockfish:**
-   - **Windows**: Download from [stockfishchess.org](https://stockfishchess.org/download/)
+   - **Windows**:
+     1. Download Stockfish from [stockfishchess.org](https://stockfishchess.org/download/)
+     2. Extract the downloaded ZIP file
+     3. Open the extracted folder and locate the Stockfish executable, such as:
+        `stockfish-windows-x86-64-avx2.exe`
+     4. Copy the full path to that `.exe` file
+     5. When Chess Tutor starts, paste that full path when prompted
    - **Mac**: `brew install stockfish`
    - **Linux**: `sudo apt-get install stockfish`
    - Note the path to the `stockfish` executable
@@ -40,7 +46,25 @@ A command-line chess tutor application that helps players solve chess puzzles an
    python main.py
    ```
 
-   On first run, you'll be prompted to provide the path to your Stockfish executable. The path is saved for future runs.
+   If Stockfish is not found automatically, Chess Tutor will prompt you to enter the full path to your Stockfish executable.
+
+### Stockfish Setup Example (Windows)
+
+After extracting Stockfish, your executable may be in a folder like:
+
+```text
+C:\Users\YourName\Downloads\stockfish\stockfish-windows-x86-64-avx2.exe
+```
+
+When the game displays:
+
+```text
+Enter path to Stockfish (or press Enter to skip):
+```
+
+paste the full path to the `.exe` file and press Enter.
+
+If you skip this step, the game still runs, but engine-powered hints and move analysis will be unavailable.
 
 ## Project Structure
 
