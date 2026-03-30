@@ -12,6 +12,8 @@ let currentBoard = null;
 let selectedSquare = null;
 let moveHistory = [];
 let legalMoves = [];
+let currentTurn = 'w';
+let suggestedMove = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,6 +49,7 @@ async function loadCurrentPuzzle() {
         currentBoard = data.fen;
         legalMoves = data.legal_moves;
         moveHistory = [];
+        suggestedMove = null;
         
         updatePuzzleInfo();
         renderBoard();
@@ -86,6 +89,7 @@ function renderBoard() {
 
     const fenParts = fen.split(' ');
     const position = fenParts[0];
+    currentTurn = fenParts[1] || 'w';
     
     let squareIndex = 0;
     const ranks = position.split('/');
@@ -134,6 +138,17 @@ function addBoardSquare(board, rank, file, piece, squareIndex) {
     
     square.id = squareName;
     square.dataset.square = squareName;
+
+    if (suggestedMove) {
+        const fromSquare = suggestedMove.substring(0, 2);
+        const toSquare = suggestedMove.substring(2, 4);
+        if (squareName === fromSquare) {
+            square.classList.add('best-move-source');
+        }
+        if (squareName === toSquare) {
+            square.classList.add('best-move-target');
+        }
+    }
     
     // Add piece
     if (piece && PIECES[piece]) {
@@ -151,6 +166,16 @@ function addBoardSquare(board, rank, file, piece, squareIndex) {
 
 // Handle square selection
 function selectSquare(squareName, piece) {
+    if (suggestedMove) {
+        const fromSquare = suggestedMove.substring(0, 2);
+        const toSquare = suggestedMove.substring(2, 4);
+        if (squareName === fromSquare || squareName === toSquare) {
+            document.getElementById('moveInput').value = suggestedMove;
+            showFeedback(`Suggested move loaded: ${suggestedMove}`, 'info');
+            return;
+        }
+    }
+
     // If clicking on a legal move destination
     if (selectedSquare && legalMoves.some(m => m.endsWith(squareName))) {
         const moveUci = selectedSquare + squareName;
@@ -162,14 +187,22 @@ function selectSquare(squareName, piece) {
         }
     }
     
-    // If clicking on own piece
-    if (piece && piece !== '.') {
+    // Only allow selecting the side to move
+    if (piece && piece !== '.' && pieceBelongsToCurrentTurn(piece)) {
         selectedSquare = squareName;
+        suggestedMove = null;
         highlightSquare(squareName);
         highlightLegalMoves(squareName);
     } else {
         deselectSquare();
     }
+}
+
+function pieceBelongsToCurrentTurn(piece) {
+    if (!piece) return false;
+    return currentTurn === 'w'
+        ? piece === piece.toUpperCase()
+        : piece === piece.toLowerCase();
 }
 
 // Highlight selected square
@@ -233,6 +266,11 @@ async function submitMove() {
         showFeedback('Please enter a move', 'error');
         return;
     }
+
+    if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(move)) {
+        showFeedback('Invalid move format. Use UCI like d2d4 or e7e8q.', 'error');
+        return;
+    }
     
     try {
         const response = await fetch('/api/move/validate', {
@@ -244,6 +282,10 @@ async function submitMove() {
         const data = await response.json();
         
         if (!data.valid) {
+            suggestedMove = data.best_move || null;
+            if (suggestedMove) {
+                renderBoard();
+            }
             showFeedback(data.message || 'Invalid move', 'error');
             return;
         }
@@ -251,7 +293,10 @@ async function submitMove() {
         // Update board
         currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
-        moveHistory.push(move);
+        suggestedMove = data.is_solution ? null : (data.best_move || null);
+        if (data.board_changed) {
+            moveHistory.push(move);
+        }
         
         // Update UI
         renderBoard();
@@ -336,6 +381,7 @@ async function undoMove() {
         currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
         if (moveHistory.length > 0) moveHistory.pop();
+        suggestedMove = null;
         
         renderBoard();
         updateMoveHistory();
@@ -360,6 +406,7 @@ async function resetBoard() {
         currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
         moveHistory = [];
+        suggestedMove = null;
         
         renderBoard();
         updateMoveHistory();

@@ -17,9 +17,9 @@ A beautiful, interactive web-based interface for the Chess Tutor puzzle solver. 
 - Keyboard support (Enter to submit)
 
 💡 **Smart Hints**
-- AI-powered move suggestions (requires Stockfish)
-- Fallback to legal moves if engine unavailable
-- Click hints to apply them instantly
+- Built-in puzzle solution hints work without Stockfish
+- Suggested moves can be clicked to apply instantly
+- Optional engine analysis is available if Stockfish is installed
 
 📊 **Progress Tracking**
 - Visual progress bar
@@ -52,7 +52,7 @@ A beautiful, interactive web-based interface for the Chess Tutor puzzle solver. 
 pip install flask
 ```
 
-2. **Optional: Install Stockfish** for enhanced hints:
+2. **Optional: Install Stockfish** for extra engine analysis:
 ```bash
 # Windows via Chocolatey
 choco install stockfish
@@ -104,7 +104,8 @@ Example: e2e4
 
 ### 2. **Getting Hints**
 - Click **"💡 Get Hints"** button
-- Top 5 moves displayed with evaluations
+- Puzzle solution moves are displayed even without Stockfish
+- If Stockfish is installed, engine-style scored analysis can also be shown
 - Click a hint to apply it instantly
 
 ### 3. **Navigation**
@@ -201,9 +202,9 @@ Both share the same:
 - Try different port: `app.run(port=5001)`
 
 ### No Hints Available
-- Stockfish engine not installed
-- Web UI will show legal moves instead
-- Install Stockfish for AI hints: see Installation
+- Make sure the puzzle loaded correctly
+- Refresh the page and try again
+- Stockfish is not required for normal puzzle hints
 
 ### Board Not Displaying
 - Clear browser cache (Ctrl+Shift+Delete)
@@ -261,7 +262,8 @@ app.run(debug=False, host='0.0.0.0', port=5000)
 
 - All puzzle data comes from existing `puzzle_solver.py`
 - Move validation uses python-chess library
-- Hints provided by optional Stockfish engine
+- Puzzle hints work without Stockfish
+- Stockfish is optional for extra engine analysis
 - Progress syncs between CLI and Web UI
 - No external dependencies beyond Flask
 

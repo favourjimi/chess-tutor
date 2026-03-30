@@ -24,6 +24,23 @@ current_board = None
 current_puzzle = None
 
 
+def get_best_feedback_move():
+    """Return the best move to suggest for the current puzzle state."""
+    global current_board, current_puzzle
+
+    if current_puzzle:
+        puzzle_best_moves = current_puzzle.get('best_moves', [])
+        if puzzle_best_moves:
+            return puzzle_best_moves[0]
+
+    if current_board and move_analyzer.is_engine_available():
+        best_moves = move_analyzer.get_best_moves(current_board.board, top_n=1)
+        if best_moves:
+            return best_moves[0].get('move')
+
+    return None
+
+
 @app.route('/')
 def index():
     """Serve main web UI"""
@@ -94,8 +111,15 @@ def validate_move():
     if not current_board or not current_puzzle:
         return jsonify({'error': 'No puzzle loaded'}), 400
     
-    data = request.json
-    move_uci = data.get('move', '')
+    data = request.json or {}
+    move_uci = str(data.get('move', '')).strip().lower()
+
+    if len(move_uci) not in (4, 5):
+        return jsonify({
+            'valid': False,
+            'message': 'Invalid move format. Use UCI like d2d4 or e7e8q.',
+            'is_solution': False
+        }), 400
     
     # Check if move is legal
     try:
@@ -103,15 +127,17 @@ def validate_move():
         if move not in current_board.board.legal_moves:
             return jsonify({
                 'valid': False,
-                'message': 'Illegal move',
+                'message': 'Illegal move for this position.',
                 'is_solution': False,
-                'legal_moves': [m.uci() for m in current_board.board.legal_moves]
+                'legal_moves': [m.uci() for m in current_board.board.legal_moves],
+                'best_move': get_best_feedback_move()
             }), 400
     except ValueError:
         return jsonify({
             'valid': False,
-            'message': 'Invalid move format',
-            'is_solution': False
+            'message': 'Invalid move format. Use UCI like d2d4 or e7e8q.',
+            'is_solution': False,
+            'best_move': get_best_feedback_move()
         }), 400
     
     # Check if it's the solution
@@ -119,14 +145,15 @@ def validate_move():
     
     # Record attempt
     puzzle_solver.record_attempt(current_puzzle['id'], move_uci, is_solution)
-    
-    # Execute the move
-    current_board.make_move(move_uci)
+
+    if is_solution:
+        current_board.make_move(move_uci)
     
     response = {
         'valid': True,
         'move': move_uci,
         'is_solution': is_solution,
+        'board_changed': is_solution,
         'message': 'Correct! Well done!' if is_solution else 'Not the best move. Try again or get hints.',
         'fen': current_board.to_fen(),
         'board_display': current_board.display(),
@@ -138,6 +165,10 @@ def validate_move():
     if is_solution:
         puzzle_solver.mark_puzzle_solved(current_puzzle['id'])
         response['progress'] = puzzle_solver.get_progress()
+    else:
+        response['best_move'] = get_best_feedback_move()
+        if response['best_move']:
+            response['message'] = f"Not the best move. Best move: {response['best_move']}"
     
     return jsonify(response)
 
@@ -145,13 +176,21 @@ def validate_move():
 @app.route('/api/move/hints', methods=['GET'])
 def get_hints():
     """Get hint moves"""
-    global current_board
+    global current_board, current_puzzle
     
     if not current_board:
         return jsonify({'error': 'No puzzle loaded'}), 400
     
+    if current_puzzle:
+        puzzle_best_moves = current_puzzle.get('best_moves', [])
+        if puzzle_best_moves:
+            return jsonify({
+                'hints': [{'move': move, 'score': None} for move in puzzle_best_moves],
+                'engine_available': move_analyzer.is_engine_available(),
+                'message': 'Showing the puzzle solution moves.'
+            })
+
     if not move_analyzer.is_engine_available():
-        # Return legal moves if no engine
         return jsonify({
             'hints': [m.uci() for m in list(current_board.board.legal_moves)[:5]],
             'engine_available': False,
@@ -161,10 +200,10 @@ def get_hints():
     try:
         best_moves = move_analyzer.get_best_moves(current_board.board, top_n=5)
         hints = []
-        for move, score in best_moves:
+        for move_info in best_moves:
             hints.append({
-                'move': move.uci(),
-                'score': float(score.white().cp) / 100 if score.white().cp else 0
+                'move': move_info.get('move'),
+                'score': move_info.get('score')
             })
         
         return jsonify({
