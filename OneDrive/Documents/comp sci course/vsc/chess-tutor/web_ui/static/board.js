@@ -79,6 +79,11 @@ function renderBoard() {
     board.innerHTML = '';
     
     const fen = currentBoard;
+    if (!fen || typeof fen !== 'string') {
+        showFeedback('Board position is unavailable. Reload the puzzle.', 'error');
+        return;
+    }
+
     const fenParts = fen.split(' ');
     const position = fenParts[0];
     
@@ -244,7 +249,7 @@ async function submitMove() {
         }
         
         // Update board
-        currentBoard = data.board_display;
+        currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
         moveHistory.push(move);
         
@@ -328,7 +333,7 @@ async function undoMove() {
             return;
         }
         
-        currentBoard = data.board_display;
+        currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
         if (moveHistory.length > 0) moveHistory.pop();
         
@@ -352,7 +357,7 @@ async function resetBoard() {
             return;
         }
         
-        currentBoard = data.board_display;
+        currentBoard = data.fen || currentBoard;
         legalMoves = data.legal_moves;
         moveHistory = [];
         

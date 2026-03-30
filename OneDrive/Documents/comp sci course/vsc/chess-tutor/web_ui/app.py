@@ -128,6 +128,7 @@ def validate_move():
         'move': move_uci,
         'is_solution': is_solution,
         'message': 'Correct! Well done!' if is_solution else 'Not the best move. Try again or get hints.',
+        'fen': current_board.to_fen(),
         'board_display': current_board.display(),
         'board_fancy': current_board.display_fancy(),
         'legal_moves': [m.uci() for m in current_board.board.legal_moves],
@@ -189,6 +190,7 @@ def undo_move():
     if current_board.undo_move():
         return jsonify({
             'success': True,
+            'fen': current_board.to_fen(),
             'board_display': current_board.display(),
             'board_fancy': current_board.display_fancy(),
             'legal_moves': [m.uci() for m in current_board.board.legal_moves]
@@ -209,6 +211,7 @@ def reset_board():
     
     return jsonify({
         'success': True,
+        'fen': current_board.to_fen(),
         'board_display': current_board.display(),
         'board_fancy': current_board.display_fancy(),
         'legal_moves': [m.uci() for m in current_board.board.legal_moves]
